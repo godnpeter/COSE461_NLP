@@ -1,4 +1,12 @@
+```
+conda create -n kobert python=3.6
 
+conda activate kobert
+
+python -m pip install -r requirements.txt
+
+nohup python train.py > ‘train.out’ &
+```
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
