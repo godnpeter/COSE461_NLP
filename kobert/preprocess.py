@@ -42,12 +42,15 @@ class BERTClassifier(nn.Module):
 
 class BERTDataset(Dataset):
     def __init__(self, dataset, sent_idx, label_idx, bert_tokenizer, max_len,
-                 pad, pair):
+                 pad, pair, kaggle=False):
         transform = nlp.data.BERTSentenceTransform(
             bert_tokenizer, max_seq_length=max_len, pad=pad, pair=pair)
 
         self.sentences = [transform([i[sent_idx]]) for i in dataset]
-        self.labels = [np.int32(i[label_idx]) for i in dataset]
+        if kaggle==False:
+            self.labels = [np.int32(i[label_idx]) for i in dataset]
+        else:
+            self.labels = [np.int32(-1) for _ in dataset]
 
     def __getitem__(self, i):
         return (self.sentences[i] + (self.labels[i], ))
@@ -56,7 +59,7 @@ class BERTDataset(Dataset):
         return (len(self.labels))
 
 class preprocess():
-    def __init__(self, train_path, test_path):
+    def __init__(self, train_path, test_path, kaggle_path):
         device = torch.device("cuda:0")
 
         bertmodel, vocab = get_pytorch_kobert_model()
@@ -66,16 +69,18 @@ class preprocess():
         #dataset_test = nlp.data.TSVDataset("ratings_test.txt?dl=1", field_indices=[1,2], num_discard_samples=1)
         dataset_train = nlp.data.TSVDataset(train_path, field_indices=[1,2], num_discard_samples=1)
         dataset_test = nlp.data.TSVDataset(test_path, field_indices=[1,2], num_discard_samples=1)
+        dataset_kaggle = nlp.data.TSVDataset(kaggle_path, field_indices=[1], num_discard_samples=1, encoding='cp949')
 
         tokenizer = get_tokenizer()
         tok = nlp.data.BERTSPTokenizer(tokenizer, vocab, lower=False)
 
         data_train = BERTDataset(dataset_train, 0, 1, tok, config.max_len, True, False)
         data_test = BERTDataset(dataset_test, 0, 1, tok, config.max_len, True, False)
+        data_kaggle = BERTDataset(dataset_kaggle, 0, 1, tok, max_len, True, False, kaggle=True)
 
         self.train_dataloader = torch.utils.data.DataLoader(data_train, batch_size=config.batch_size, num_workers=5)
         self.test_dataloader = torch.utils.data.DataLoader(data_test, batch_size=config.batch_size, num_workers=5)
-
+        self.kaggle_dataloader = torch.utils.data.DataLoader(data_kaggle, batch_size=1, num_workers=5)
 # def main():
 #     config = config()
 #

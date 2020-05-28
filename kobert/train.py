@@ -12,6 +12,7 @@ from transformers.optimization import get_linear_schedule_with_warmup
 ##Change
 from config import config
 from preprocess import preprocess
+import csv
 ##Change
 
 def calc_accuracy(X,Y):
@@ -22,12 +23,13 @@ def calc_accuracy(X,Y):
 config = config()
 
 print("Start Preprocessing")
-p = preprocess(config.train_path, config.test_path)
+p = preprocess(config.train_path, config.test_path, config.kaggle_path)
 
 device = torch.device("cuda:0")
 model = p.model
 train_dataloader = p.train_dataloader
 test_dataloader = p.test_dataloader
+kaggle_dataloader = p.kaggle_dataloader
 print("Finish Preprocessing")
 
 # Prepare optimizer and schedule (linear warmup and decay)
@@ -48,10 +50,14 @@ scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_s
 
 print("Start Training")
 from datetime import datetime
-for e in range(config.num_epochs):    
+
+best_epoch=0
+best_accuracy=-1
+
+for e in range(config.num_epochs):
     start = datetime.now()
     print("EPOCH: %d | TIME: %s " % (e, str(start)))
-    
+
     train_acc = 0.0
     test_acc = 0.0
     model.train()
@@ -72,6 +78,7 @@ for e in range(config.num_epochs):
         if batch_id % config.log_interval == 0:
             print("epoch {} batch id {} loss {} train acc {}".format(e+1, batch_id+1, loss.data.cpu().numpy(), train_acc / (batch_id+1)))
     print("epoch {} train acc {}".format(e+1, train_acc / (batch_id+1)))
+
     model.eval()
     #for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm(test_dataloader)):
     for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(test_dataloader):
@@ -81,4 +88,32 @@ for e in range(config.num_epochs):
         label = label.long().to(device)
         out = model(token_ids, valid_length, segment_ids)
         test_acc += calc_accuracy(out, label)
+    test_acc = test_acc / (batch_id+1)
     print("epoch {} test acc {}".format(e+1, test_acc / (batch_id+1)))
+
+    if best_accuracy < test_acc:
+        best_epoch = e
+        best_accuracy = test_acc
+        #Model save
+        torch.save(model.state_dict(), "./model/model.epoch-" + str(e))
+
+        #kaggle
+        kaggle_id, kaggle_sen, kaggle_label=[],[],[]
+        with open(config.kaggle_path,'r', encoding='euc-kr') as f:
+            rdr = csv.DictReader(f)
+            for i in rdr:
+                kaggle_id.append(i['Id'])
+                kaggle_sen.append(i['Sentence'])
+
+        #make pred
+        wf = open("./result/sample_epoch_"+str(e)+".csv",'w', encoding='euc-kr')
+        wr=csv.writer(wf)
+        wr.writerow(["Id", "Predicted"])
+        for batch_id, (token_ids, valid_length, segment_ids,_) in enumerate(kaggle_dataloader):
+            token_ids = token_ids.long().to(device)
+            segment_ids = segment_ids.long().to(device)
+            valid_length= valid_length
+            out = model(token_ids, valid_length, segment_ids)
+            _, max_indices = torch.max(out,1)
+            wr.writerow([batch_id,max_indices])
+        wf.close()
