@@ -61,24 +61,24 @@ for e in range(config.num_epochs):
     train_acc = 0.0
     test_acc = 0.0
     model.train()
-    #for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm(train_dataloader)):
-    for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(train_dataloader):
-        optimizer.zero_grad()
-        token_ids = token_ids.long().to(device)
-        segment_ids = segment_ids.long().to(device)
-        valid_length= valid_length
-        label = label.long().to(device)
-        out = model(token_ids, valid_length, segment_ids)
-        loss = loss_fn(out, label)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
-        optimizer.step()
-        scheduler.step()  # Update learning rate schedule
-        train_acc += calc_accuracy(out, label)
-        if batch_id % config.log_interval == 0:
-            print("epoch {} batch id {} loss {} train acc {}".format(e+1, batch_id+1, loss.data.cpu().numpy(), train_acc / (batch_id+1)))
-    print("epoch {} train acc {}".format(e+1, train_acc / (batch_id+1)))
-
+    '''
+        for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(train_dataloader):
+            optimizer.zero_grad()
+            token_ids = token_ids.long().to(device)
+            segment_ids = segment_ids.long().to(device)
+            valid_length= valid_length
+            label = label.long().to(device)
+            out = model(token_ids, valid_length, segment_ids)
+            loss = loss_fn(out, label)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+            optimizer.step()
+            scheduler.step()  # Update learning rate schedule
+            train_acc += calc_accuracy(out, label)
+            if batch_id % config.log_interval == 0:
+                print("epoch {} batch id {} loss {} train acc {}".format(e+1, batch_id+1, loss.data.cpu().numpy(), train_acc / (batch_id+1)))
+        print("epoch {} train acc {}".format(e+1, train_acc / (batch_id+1)))
+    '''
     model.eval()
     #for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm(test_dataloader)):
     for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(test_dataloader):
@@ -97,13 +97,13 @@ for e in range(config.num_epochs):
         #Model save
         torch.save(model.state_dict(), "./model/model.epoch-" + str(e))
 
-        #kaggle
-        kaggle_id, kaggle_sen, kaggle_label=[],[],[]
-        with open(config.kaggle_path,'r', encoding='euc-kr') as f:
-            rdr = csv.DictReader(f)
-            for i in rdr:
-                kaggle_id.append(i['Id'])
-                kaggle_sen.append(i['Sentence'])
+        # #kaggle
+        # kaggle_id, kaggle_sen, kaggle_label=[],[],[]
+        # with open(config.kaggle_path,'r', encoding='euc-kr') as f:
+        #     rdr = csv.DictReader(f)
+        #     for i in rdr:
+        #         kaggle_id.append(i['Id'])
+        #         kaggle_sen.append(i['Sentence'])
 
         #make pred
         wf = open("./result/sample_epoch_"+str(e)+".csv",'w', encoding='euc-kr')
