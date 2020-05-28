@@ -89,7 +89,7 @@ for e in range(config.num_epochs):
         out = model(token_ids, valid_length, segment_ids)
         test_acc += calc_accuracy(out, label)
     test_acc = test_acc / (batch_id+1)
-    print("epoch {} test acc {}".format(e+1, test_acc / (batch_id+1)))
+    print("epoch {} test acc {}".format(e+1, test_acc))
 
     if best_accuracy < test_acc:
         best_epoch = e
