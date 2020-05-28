@@ -10,7 +10,7 @@ class config:
 
     #train
     warmup_ratio = 0.1
-    num_epochs = 5
+    num_epochs = 50
     max_grad_norm = 1
     log_interval = 200
     learning_rate =  5e-5
