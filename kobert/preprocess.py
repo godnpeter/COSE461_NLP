@@ -65,8 +65,6 @@ class preprocess():
         bertmodel, vocab = get_pytorch_kobert_model()
         self.model = BERTClassifier(bertmodel,  dr_rate=0.5).to(device)
 
-        #dataset_train = nlp.data.TSVDataset("ratings_train.txt?dl=1", field_indices=[1,2], num_discard_samples=1)
-        #dataset_test = nlp.data.TSVDataset("ratings_test.txt?dl=1", field_indices=[1,2], num_discard_samples=1)
         dataset_train = nlp.data.TSVDataset(train_path, field_indices=[1,2], num_discard_samples=1)
         dataset_test = nlp.data.TSVDataset(test_path, field_indices=[1,2], num_discard_samples=1)
         dataset_kaggle = nlp.data.TSVDataset(kaggle_path, field_indices=[1], num_discard_samples=1, encoding='cp949')
@@ -76,29 +74,8 @@ class preprocess():
 
         data_train = BERTDataset(dataset_train, 0, 1, tok, config.max_len, True, False)
         data_test = BERTDataset(dataset_test, 0, 1, tok, config.max_len, True, False)
-        data_kaggle = BERTDataset(dataset_kaggle, 0, 1, tok, max_len, True, False, kaggle=True)
+        data_kaggle = BERTDataset(dataset_kaggle, 0, 1, tok, config.max_len, True, False, kaggle=True)
 
         self.train_dataloader = torch.utils.data.DataLoader(data_train, batch_size=config.batch_size, num_workers=5)
         self.test_dataloader = torch.utils.data.DataLoader(data_test, batch_size=config.batch_size, num_workers=5)
         self.kaggle_dataloader = torch.utils.data.DataLoader(data_kaggle, batch_size=1, num_workers=5)
-# def main():
-#     config = config()
-#
-#     _, vocab = get_pytorch_kobert_model()
-#
-#     dataset_train = nlp.data.TSVDataset("ratings_train.txt?dl=1", field_indices=[1,2], num_discard_samples=1)
-#     dataset_test = nlp.data.TSVDataset("ratings_test.txt?dl=1", field_indices=[1,2], num_discard_samples=1)
-#
-#     tokenizer = get_tokenizer()
-#     tok = nlp.data.BERTSPTokenizer(tokenizer, vocab, lower=False)
-#
-#     data_train = BERTDataset(dataset_train, 0, 1, tok, config.max_len, True, False)
-#     data_test = BERTDataset(dataset_test, 0, 1, tok, config.max_len, True, False)
-#
-#     train_dataloader = torch.utils.data.DataLoader(data_train, batch_size=config.batch_size, num_workers=5)
-#     test_dataloader = torch.utils.data.DataLoader(data_test, batch_size=config.batch_size, num_workers=5)
-#
-#     return train_dataloader, test_dataloader
-#
-# if "__name__"=="__main__":
-#     main()
