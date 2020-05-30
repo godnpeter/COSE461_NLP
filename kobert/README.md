@@ -5,7 +5,11 @@ conda activate kobert
 
 python -m pip install -r requirements.txt
 
-nohup python train.py > ‘./logs/train.out’ &
+if only use training data
+nohup python -u train.py > ‘./logs/train.out’ &
+
+elif use all data (w.o seperation train with test)
+nohup python -u train.py --use_all 1 > ‘./logs/train.out’ &
 ```
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
