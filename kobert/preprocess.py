@@ -82,4 +82,4 @@ class preprocess():
         if use_all:
             dataset_all = nlp.data.TSVDataset(config.all_path, field_indices=[1,2], num_discard_samples=1)
             data_all =  BERTDataset(dataset_all, 0, 1, tok, config.max_len, True, False)
-            self.all_dataloader = torch.utils.data.DataLoader(data_all, batch_size=config.batch_size, num_workers=5)
+            self.all_dataloader = torch.utils.data.DataLoader(data_all, batch_size=config.batch_size, num_workers=5, shuffle=True)

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from tqdm import tqdm
+#from tqdm import tqdm
 
 from transformers import AdamW
 from transformers.optimization import get_linear_schedule_with_warmup
@@ -63,6 +63,7 @@ from datetime import datetime
 
 best_epoch=0
 best_accuracy=-1
+past_train_accuracy = -1
 warmup_epoch = 3
 
 for e in range(config.num_epochs):
@@ -99,13 +100,13 @@ for e in range(config.num_epochs):
     test_acc = test_acc / (batch_id+1)
     print("epoch {} test acc {}".format(e, test_acc))
 
-    if best_accuracy < test_acc and e >= warmup_epoch:
+    if (best_accuracy < test_acc or train_acc > past_train_accuracy) and e >= warmup_epoch:
         best_epoch = e
         best_accuracy = test_acc
         #Model save
-        torch.save(model.state_dict(), "./model/model.epoch-" + str(e) + "_"+str(int(best_accuracy*10000)))
+        torch.save(model.state_dict(), "./model/model.epoch-" + str(e) + "_"+str(int(best_accuracy*100000)))
         #make pred
-        wf = open("./result/sample_epoch_"+str(e)+"_"+str(int(best_accuracy*10000))+".csv",'w', encoding='euc-kr')
+        wf = open("./result/sample_epoch_"+str(e)+"_"+str(int(best_accuracy*100000))+".csv",'w', encoding='euc-kr')
         wr=csv.writer(wf)
         wr.writerow(["Id", "Predicted"])
         for batch_id, (token_ids, valid_length, segment_ids,_) in enumerate(kaggle_dataloader):
@@ -116,3 +117,5 @@ for e in range(config.num_epochs):
             _, max_indices = torch.max(out,1)
             wr.writerow([batch_id,max_indices.item()])
         wf.close()
+
+    past_train_accuracy = train_acc
