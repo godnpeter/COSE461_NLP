@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--use_all', type=int, default=0)
 #
 args = parser.parse_args()
-print args
+print(args)
 
 def calc_accuracy(X,Y):
     max_vals, max_indices = torch.max(X, 1)
@@ -31,7 +31,7 @@ def calc_accuracy(X,Y):
 config = config()
 
 print("Start Preprocessing")
-p = preprocess(config.train_path, config.test_path, config.kaggle_path)
+p = preprocess(config.train_path, config.test_path, config.kaggle_path, args.use_all)
 
 device = torch.device("cuda:0")
 model = p.model
@@ -63,7 +63,7 @@ from datetime import datetime
 
 best_epoch=0
 best_accuracy=-1
-warmup_epoch = 5
+warmup_epoch = 3
 
 for e in range(config.num_epochs):
     start = datetime.now()

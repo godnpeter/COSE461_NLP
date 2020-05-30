@@ -59,7 +59,7 @@ class BERTDataset(Dataset):
         return (len(self.labels))
 
 class preprocess():
-    def __init__(self, train_path, test_path, kaggle_path, use_all=False):
+    def __init__(self, train_path, test_path, kaggle_path, use_all):
         device = torch.device("cuda:0")
 
         bertmodel, vocab = get_pytorch_kobert_model()
