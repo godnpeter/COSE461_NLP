@@ -4,6 +4,7 @@ class config:
     #preprocess
     max_len = 64
     batch_size = 64
+    all_path = "./data/ratings.txt"
     train_path = "./data/ratings_train.txt"
     test_path = "./data/ratings_test.txt"
     kaggle_path = "./data/ko_data.txt"

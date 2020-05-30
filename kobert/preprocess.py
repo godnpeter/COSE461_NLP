@@ -59,7 +59,7 @@ class BERTDataset(Dataset):
         return (len(self.labels))
 
 class preprocess():
-    def __init__(self, train_path, test_path, kaggle_path):
+    def __init__(self, train_path, test_path, kaggle_path, use_all=False):
         device = torch.device("cuda:0")
 
         bertmodel, vocab = get_pytorch_kobert_model()
@@ -79,3 +79,7 @@ class preprocess():
         self.train_dataloader = torch.utils.data.DataLoader(data_train, batch_size=config.batch_size, num_workers=5)
         self.test_dataloader = torch.utils.data.DataLoader(data_test, batch_size=config.batch_size, num_workers=5)
         self.kaggle_dataloader = torch.utils.data.DataLoader(data_kaggle, batch_size=1, num_workers=5)
+        if use_all:
+            dataset_all = nlp.data.TSVDataset(config.all_path, field_indices=[1,2], num_discard_samples=1)
+            data_all =  BERTDataset(dataset_all, 0, 1, tok, config.max_len, True, False)
+            self.all_dataloader = torch.utils.data.DataLoader(data_all, batch_size=config.batch_size, num_workers=5)

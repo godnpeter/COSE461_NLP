@@ -13,7 +13,15 @@ from transformers.optimization import get_linear_schedule_with_warmup
 from config import config
 from preprocess import preprocess
 import csv
+import argparse
 ##Change
+
+parser = argparse.ArgumentParser()
+#For Use All_data
+parser.add_argument('--use_all', type=int, default=0)
+#
+args = parser.parse_args()
+print args
 
 def calc_accuracy(X,Y):
     max_vals, max_indices = torch.max(X, 1)
@@ -27,7 +35,10 @@ p = preprocess(config.train_path, config.test_path, config.kaggle_path)
 
 device = torch.device("cuda:0")
 model = p.model
-train_dataloader = p.train_dataloader
+if args.use_all:
+    train_dataloader = p.all_dataloader
+else:
+    train_dataloader = p.train_dataloader
 test_dataloader = p.test_dataloader
 kaggle_dataloader = p.kaggle_dataloader
 print("Finish Preprocessing")
@@ -57,11 +68,9 @@ warmup_epoch = 5
 for e in range(config.num_epochs):
     start = datetime.now()
     print("EPOCH: %d | TIME: %s " % (e, str(start)))
-
     train_acc = 0.0
     test_acc = 0.0
     model.train()
-
     for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(train_dataloader):
         optimizer.zero_grad()
         token_ids = token_ids.long().to(device)
@@ -76,11 +85,10 @@ for e in range(config.num_epochs):
         scheduler.step()  # Update learning rate schedule
         train_acc += calc_accuracy(out, label)
         if batch_id % config.log_interval == 0:
-            print("epoch {} batch id {} loss {} train acc {}".format(e+1, batch_id+1, loss.data.cpu().numpy(), train_acc / (batch_id+1)))
-    print("epoch {} train acc {}".format(e+1, train_acc / (batch_id+1)))
+            print("epoch {} batch id {} loss {} train acc {}".format(e, batch_id+1, loss.data.cpu().numpy(), train_acc / (batch_id+1)))
+    print("epoch {} train acc {}".format(e, train_acc / (batch_id+1)))
 
     model.eval()
-    #for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(tqdm(test_dataloader)):
     for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(test_dataloader):
         token_ids = token_ids.long().to(device)
         segment_ids = segment_ids.long().to(device)
@@ -89,15 +97,15 @@ for e in range(config.num_epochs):
         out = model(token_ids, valid_length, segment_ids)
         test_acc += calc_accuracy(out, label)
     test_acc = test_acc / (batch_id+1)
-    print("epoch {} test acc {}".format(e+1, test_acc))
+    print("epoch {} test acc {}".format(e, test_acc))
 
     if best_accuracy < test_acc and e >= warmup_epoch:
         best_epoch = e
         best_accuracy = test_acc
         #Model save
-        torch.save(model.state_dict(), "./model/model.epoch-" + str(e))
+        torch.save(model.state_dict(), "./model/model.epoch-" + str(e) + "_"+str(int(best_accuracy*10000)))
         #make pred
-        wf = open("./result/sample_epoch_"+str(e)+".csv",'w', encoding='euc-kr')
+        wf = open("./result/sample_epoch_"+str(e)+"_"+str(int(best_accuracy*10000))+".csv",'w', encoding='euc-kr')
         wr=csv.writer(wf)
         wr.writerow(["Id", "Predicted"])
         for batch_id, (token_ids, valid_length, segment_ids,_) in enumerate(kaggle_dataloader):
