@@ -7,6 +7,10 @@ import torch.optim as optim
 
 from transformers import AdamW
 from transformers.optimization import get_linear_schedule_with_warmup
+
+#add 2020.06.15
+from transformers.optimization import get_cosine_with_hard_restarts_schedule_with_warmup
+
 #from transformers.optimization import WarmupLinearSchedule
 
 ##Change
@@ -19,7 +23,8 @@ import argparse
 parser = argparse.ArgumentParser()
 #For Use All_data
 parser.add_argument('--use_all', type=int, default=0)
-#
+#add 2020.06.15
+parser.add_argument('--scheduler',required=True)
 args = parser.parse_args()
 print(args)
 
@@ -56,7 +61,10 @@ loss_fn = nn.CrossEntropyLoss()
 t_total = len(train_dataloader) * config.num_epochs
 warmup_step = int(t_total * config.warmup_ratio)
 
-scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_step, num_training_steps=t_total)
+if args.scheduler == 'linear':
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_step, num_training_steps=t_total)
+elif args.scheduler == 'cosine':
+    scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(optimizer, num_warmup_steps=warmup_step, num_training_steps=t_total)
 
 print("Start Training")
 from datetime import datetime
@@ -65,6 +73,11 @@ best_epoch=0
 best_accuracy=-1
 past_train_accuracy = -1
 warmup_epoch = 3
+
+#add 2020.06.15
+train_acc_lst_for_plot = []
+test_acc_lst_for_plot = []
+#train_loss_lst_for_plot = []
 
 for e in range(config.num_epochs):
     start = datetime.now()
@@ -88,6 +101,7 @@ for e in range(config.num_epochs):
         if batch_id % config.log_interval == 0:
             print("epoch {} batch id {} loss {} train acc {}".format(e, batch_id+1, loss.data.cpu().numpy(), train_acc / (batch_id+1)))
     print("epoch {} train acc {}".format(e, train_acc / (batch_id+1)))
+    train_acc_lst_for_plot.append(train_acc/(batch_id+1))
 
     model.eval()
     for batch_id, (token_ids, valid_length, segment_ids, label) in enumerate(test_dataloader):
@@ -99,6 +113,10 @@ for e in range(config.num_epochs):
         test_acc += calc_accuracy(out, label)
     test_acc = test_acc / (batch_id+1)
     print("epoch {} test acc {}".format(e, test_acc))
+    test_acc_lst_for_plot.append(test_acc)
+	
+    print("train:{}".format(train_acc_lst_for_plot))
+    print("test:{}".format(test_acc_lst_for_plot))
 
     if (best_accuracy < test_acc or train_acc > past_train_accuracy) and e >= warmup_epoch:
         best_epoch = e
