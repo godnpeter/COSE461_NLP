@@ -1,4 +1,8 @@
 ```
+git clone https://github.com/mynsng/COSE461_NLP.git
+
+cd COSE461_NLP/kobert
+
 conda create -n kobert python=3.6
 
 conda activate kobert
