@@ -11,11 +11,11 @@ python -m pip install -r requirements.txt
 
 if use linear scheduler
 
-python -u train.py --scheduler linear
+  python -u train.py --scheduler linear
 
 elif use cosine scheduler
 
-python -u train.py --scheduler cosine
+  python -u train.py --scheduler cosine
 
 ```
 
