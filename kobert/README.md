@@ -5,11 +5,15 @@ conda activate kobert
 
 python -m pip install -r requirements.txt
 
-if only use training data
-nohup python -u train.py > ‘./logs/train.out’ &
+if use linear scheduler
 
-elif use all data (w.o seperation train with test)
-nohup python -u train.py --use_all 1 > ‘./logs/train.out’ &
+python -u train.py --scheduler linear
+
+elif use cosine scheduler
+
+python -u train.py --scheduler cosine
+
+참고소스: SKTBrain/[Kobert](https://github.com/SKTBrain/KoBERT)
 ```
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
