@@ -13,8 +13,9 @@ elif use cosine scheduler
 
 python -u train.py --scheduler cosine
 
-참고소스: SKTBrain/[Kobert](https://github.com/SKTBrain/KoBERT)
 ```
+
+- 참고소스: SKTBrain/[Kobert](https://github.com/SKTBrain/KoBERT)
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
