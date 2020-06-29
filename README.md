@@ -2,6 +2,8 @@ Korea Univ. COSE461 Natural Language Processing
 
 ## English
 ```
+This code references https://mccormickml.com/2019/07/22/BERT-fine-tuning/#2-loading-cola-dataset
+
 git clone https://github.com/mynsng/COSE461_NLP.git
 
 cd COSE461_NLP/English
