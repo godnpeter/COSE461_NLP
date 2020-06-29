@@ -23,6 +23,8 @@ python Bert_Friends_test.py
 
 ## Korean
 ```
+This code references https://github.com/SKTBrain/KoBERT
+=================================================================================================
 git clone https://github.com/mynsng/COSE461_NLP.git
 
 cd COSE461_NLP/kobert
